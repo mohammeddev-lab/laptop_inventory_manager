@@ -100,10 +100,7 @@ class PageFrame extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: AppTypography.pageTitle,
-                  ),
+                  Text(title, style: AppTypography.pageTitle),
                   const SizedBox(height: AppSpacing.xs),
                   Text(description, style: AppTypography.caption),
                 ],
@@ -141,9 +138,7 @@ class PrimaryButton extends StatelessWidget {
         vertical: AppSpacing.md,
       ),
       minimumSize: const Size(0, 44),
-      shape: const RoundedRectangleBorder(
-        borderRadius: AppRadius.mediumAll,
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.mediumAll),
     ),
   );
 }
@@ -373,15 +368,21 @@ class InventoryFilters extends StatelessWidget {
       child: Row(
         textDirection: TextDirection.rtl,
         children: const [
-          Expanded(child: _Filter(label: 'الشركة', value: 'جميع الشركات')),
+          Expanded(
+            child: _Filter(label: 'الشركة', value: 'جميع الشركات'),
+          ),
           SizedBox(width: 10),
-          Expanded(child: _Filter(label: 'المعالج', value: 'جميع المعالجات')),
+          Expanded(
+            child: _Filter(label: 'المعالج', value: 'جميع المعالجات'),
+          ),
           SizedBox(width: 10),
           Expanded(
             child: _Filter(label: 'كرت الشاشة', value: 'جميع كروت الشاشة'),
           ),
           SizedBox(width: 10),
-          Expanded(child: _Filter(label: 'حجم الشاشة', value: 'جميع الأحجام')),
+          Expanded(
+            child: _Filter(label: 'حجم الشاشة', value: 'جميع الأحجام'),
+          ),
         ],
       ),
     ),
@@ -420,9 +421,7 @@ class _Filter extends StatelessWidget {
         borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
       ),
     ),
-    selectedItemBuilder: (context) => [
-      value,
-    ].map((item) {
+    selectedItemBuilder: (context) => [value].map((item) {
       return Align(
         alignment: AlignmentDirectional.centerEnd,
         child: Text(

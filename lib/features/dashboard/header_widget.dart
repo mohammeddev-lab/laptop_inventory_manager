@@ -6,10 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 
 class DashboardHeader extends StatelessWidget {
-  const DashboardHeader({
-    super.key,
-    required this.title,
-  });
+  const DashboardHeader({super.key, required this.title});
 
   final String title;
 

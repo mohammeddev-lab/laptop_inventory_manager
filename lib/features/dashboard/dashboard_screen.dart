@@ -88,18 +88,18 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 18),
             LayoutBuilder(
               builder: (context, constraints) => Row(
-              children: statCards.asMap().entries.map((entry) {
-                final index = entry.key;
-                final card = entry.value;
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: index < statCards.length - 1 ? AppSpacing.md : 0,
+                children: statCards.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final card = entry.value;
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: index < statCards.length - 1 ? AppSpacing.md : 0,
+                      ),
+                      child: card,
                     ),
-                    child: card,
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: AppSpacing.section),
@@ -171,10 +171,7 @@ class _ReportPanel extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: AppTypography.cardTitle,
-                ),
+                Text(title, style: AppTypography.cardTitle),
                 Text(
                   '${rows.length}',
                   style: const TextStyle(

@@ -7,17 +7,18 @@ import 'app_typography.dart';
 
 abstract final class AppTheme {
   static ThemeData light() {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.light,
-    ).copyWith(
-      primary: AppColors.primary,
-      onPrimary: Colors.white,
-      surface: AppColors.surface,
-      onSurface: AppColors.text,
-      outline: AppColors.border,
-      error: AppColors.error,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.light,
+        ).copyWith(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          surface: AppColors.surface,
+          onSurface: AppColors.text,
+          outline: AppColors.border,
+          error: AppColors.error,
+        );
 
     return ThemeData(
       useMaterial3: true,

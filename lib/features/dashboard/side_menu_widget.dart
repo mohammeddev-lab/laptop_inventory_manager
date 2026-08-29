@@ -59,9 +59,7 @@ class SideMenuWidget extends StatelessWidget {
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeInOut,
                   decoration: BoxDecoration(
-                    color: isSelected
-                      ? AppColors.primary
-                      : AppColors.surface,
+                    color: isSelected ? AppColors.primary : AppColors.surface,
                     borderRadius: AppRadius.mediumAll,
                   ),
                   child: Material(
@@ -83,8 +81,8 @@ class SideMenuWidget extends StatelessWidget {
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: isSelected
-                                  ? AppColors.surface
-                                  : AppColors.text,
+                                    ? AppColors.surface
+                                    : AppColors.text,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -92,8 +90,8 @@ class SideMenuWidget extends StatelessWidget {
                             Icon(
                               item.$1,
                               color: isSelected
-                                ? AppColors.surface
-                                : AppColors.primary,
+                                  ? AppColors.surface
+                                  : AppColors.primary,
                               size: 18,
                             ),
                           ],
@@ -107,10 +105,7 @@ class SideMenuWidget extends StatelessWidget {
             const Spacer(),
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: Text(
-                'تحديث البيانات',
-                style: AppTypography.caption,
-              ),
+              child: Text('تحديث البيانات', style: AppTypography.caption),
             ),
           ],
         ),
