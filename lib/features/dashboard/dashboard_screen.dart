@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_typography.dart';
 import 'header_widget.dart';
 import 'stat_card_widget.dart';
 
@@ -77,30 +80,34 @@ class DashboardScreen extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const DashboardHeader(title: 'مكتب الشهد'),
             const SizedBox(height: 18),
-            Row(
+            LayoutBuilder(
+              builder: (context, constraints) => Row(
               children: statCards.asMap().entries.map((entry) {
                 final index = entry.key;
                 final card = entry.value;
                 return Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(left: index < statCards.length - 1 ? 12 : 0),
+                    padding: EdgeInsets.only(
+                      left: index < statCards.length - 1 ? AppSpacing.md : 0,
+                    ),
                     child: card,
                   ),
                 );
               }).toList(),
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.section),
             Expanded(
               child: GridView.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 20,
+                crossAxisCount: MediaQuery.sizeOf(context).width > 1100 ? 2 : 1,
+                mainAxisSpacing: AppSpacing.section,
+                crossAxisSpacing: AppSpacing.section,
                 childAspectRatio: 1.8,
                 children: panels.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -152,11 +159,11 @@ class _ReportPanel extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: const Color(0xfff6f8fb),
-          border: Border.all(color: const Color(0xffdfe5ee)),
-          borderRadius: BorderRadius.circular(14),
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.border),
+          borderRadius: AppRadius.largeAll,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,18 +173,13 @@ class _ReportPanel extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.text,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
+                  style: AppTypography.cardTitle,
                 ),
                 Text(
                   '${rows.length}',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
-                    fontSize: 12,
                   ),
                 ),
               ],
@@ -185,15 +187,15 @@ class _ReportPanel extends StatelessWidget {
             const SizedBox(height: 12),
             ...rows.map(
               (row) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: Row(
                   children: [
                     Expanded(
                       child: Container(
                         height: 8,
                         decoration: BoxDecoration(
-                          color: const Color(0xffdfeaff),
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.lightBlue,
+                          borderRadius: AppRadius.smallAll,
                         ),
                         child: Align(
                           alignment: Alignment.centerRight,
@@ -202,7 +204,7 @@ class _ReportPanel extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: AppRadius.smallAll,
                               ),
                             ),
                           ),
@@ -215,10 +217,8 @@ class _ReportPanel extends StatelessWidget {
                       child: Text(
                         row.count.toString(),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: AppTypography.tableHeader.copyWith(
                           color: AppColors.text,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
                         ),
                       ),
                     ),
@@ -228,10 +228,7 @@ class _ReportPanel extends StatelessWidget {
                       child: Text(
                         row.name,
                         textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          color: AppColors.text,
-                          fontSize: 11,
-                        ),
+                        style: AppTypography.tableBody,
                       ),
                     ),
                   ],

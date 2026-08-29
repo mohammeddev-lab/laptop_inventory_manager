@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_spacing.dart';
 
 class StatCard extends StatelessWidget {
   const StatCard({
@@ -32,12 +34,12 @@ class StatCard extends StatelessWidget {
         );
       },
       child: Container(
-        height: 86,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 96,
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: accent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xffdfe5ee)),
+          borderRadius: AppRadius.largeAll,
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           children: [
@@ -45,8 +47,8 @@ class StatCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.surface,
+                borderRadius: AppRadius.mediumAll,
               ),
               alignment: Alignment.center,
               child: Text(
@@ -54,11 +56,11 @@ class StatCard extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 14,
+                  fontSize: 18,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Align(
                 alignment: Alignment.centerRight,
@@ -67,8 +69,8 @@ class StatCard extends StatelessWidget {
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     color: AppColors.text,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
                   ),
                 ),
               ),

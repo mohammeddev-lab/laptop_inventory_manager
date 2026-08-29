@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_typography.dart';
 
 class DashboardHeader extends StatelessWidget {
   const DashboardHeader({
@@ -15,23 +18,21 @@ class DashboardHeader extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
-        height: 62,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xfff2f5fa),
-          border: Border.all(color: const Color(0xffdfe5ee)),
-          borderRadius: BorderRadius.circular(14),
+        height: 68,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(bottom: BorderSide(color: AppColors.border)),
+          borderRadius: AppRadius.largeAll,
         ),
         alignment: Alignment.centerRight,
         child: Text(
           title,
           textAlign: TextAlign.right,
-          style: const TextStyle(
-            color: AppColors.text,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.2,
-          ),
+          style: AppTypography.pageTitle,
         ),
       ),
     );

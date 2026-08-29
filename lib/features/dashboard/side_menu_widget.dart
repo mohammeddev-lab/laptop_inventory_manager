@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_typography.dart';
 
 class SideMenuWidget extends StatelessWidget {
   const SideMenuWidget({
@@ -24,68 +27,73 @@ class SideMenuWidget extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
-        width: 220,
-        padding: const EdgeInsets.fromLTRB(12, 18, 12, 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(-2, 0),
-            ),
-          ],
+        width: 228,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.xl,
+          AppSpacing.md,
+          AppSpacing.sm,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(left: BorderSide(color: AppColors.border)),
         ),
         child: Column(
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               'مكتب الشهد',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.primary,
+                color: AppColors.text,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.xl),
             ...List.generate(destinations.length, (index) {
               final item = destinations[index];
               final isSelected = index == selected;
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeInOut,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
+                    color: isSelected
+                      ? AppColors.primary
+                      : AppColors.surface,
+                    borderRadius: AppRadius.mediumAll,
                   ),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadius.mediumAll,
                       onTap: () => onSelected(index),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.md,
                         ),
                         child: Row(
+                          textDirection: TextDirection.rtl,
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            const SizedBox(width: 8),
                             Text(
                               item.$2,
                               textAlign: TextAlign.right,
                               style: TextStyle(
-                                color: isSelected ? Colors.white : AppColors.text,
+                                color: isSelected
+                                  ? AppColors.surface
+                                  : AppColors.text,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                            const SizedBox(width: 10),
                             Icon(
                               item.$1,
-                              color: isSelected ? Colors.white : AppColors.primary,
+                              color: isSelected
+                                ? AppColors.surface
+                                : AppColors.primary,
                               size: 18,
                             ),
                           ],
@@ -98,13 +106,10 @@ class SideMenuWidget extends StatelessWidget {
             }),
             const Spacer(),
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Text(
                 'تحديث البيانات',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.secondary,
-                ),
+                style: AppTypography.caption,
               ),
             ),
           ],

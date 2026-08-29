@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/database/database_service.dart';
 import 'core/theme/app_colors.dart';
+import 'core/theme/app_radius.dart';
+import 'core/theme/app_spacing.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/app_typography.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/dashboard/side_menu_widget.dart';
 import 'features/inventory/data/inventory_repository.dart';
@@ -21,25 +25,7 @@ class InventoryApp extends StatelessWidget {
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'نظام جرد الحاسبات المحمولة',
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Cairo',
-        scaffoldBackgroundColor: AppColors.background,
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-        inputDecorationTheme: const InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-          ),
-        ),
-      ),
+      theme: AppTheme.light(),
       home: const AppShell(),
     ),
   );
@@ -104,7 +90,7 @@ class PageFrame extends StatelessWidget {
   final Widget? action;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(32),
+    padding: const EdgeInsets.all(AppSpacing.page),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -116,23 +102,17 @@ class PageFrame extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.text,
-                    ),
+                    style: AppTypography.pageTitle,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: const TextStyle(color: AppColors.secondary),
-                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(description, style: AppTypography.caption),
                 ],
               ),
             ),
             ?action,
           ],
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpacing.section),
         Expanded(child: child),
       ],
     ),
@@ -156,7 +136,14 @@ class PrimaryButton extends StatelessWidget {
     label: Text(label),
     style: FilledButton.styleFrom(
       backgroundColor: AppColors.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.md,
+      ),
+      minimumSize: const Size(0, 44),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.mediumAll,
+      ),
     ),
   );
 }
@@ -372,32 +359,31 @@ class SearchField extends StatelessWidget {
 
 class InventoryFilters extends StatelessWidget {
   const InventoryFilters({super.key});
+
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(10),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: AppColors.border),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Row(
-      children: const [
-        Expanded(
-          child: _Filter(label: 'الشركة', value: 'جميع الشركات'),
-        ),
-        SizedBox(width: 10),
-        Expanded(
-          child: _Filter(label: 'المعالج', value: 'جميع المعالجات'),
-        ),
-        SizedBox(width: 10),
-        Expanded(
-          child: _Filter(label: 'كرت الشاشة', value: 'جميع كروت الشاشة'),
-        ),
-        SizedBox(width: 10),
-        Expanded(
-          child: _Filter(label: 'حجم الشاشة', value: 'جميع الأحجام'),
-        ),
-      ],
+  Widget build(BuildContext context) => Directionality(
+    textDirection: TextDirection.rtl,
+    child: Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        children: const [
+          Expanded(child: _Filter(label: 'الشركة', value: 'جميع الشركات')),
+          SizedBox(width: 10),
+          Expanded(child: _Filter(label: 'المعالج', value: 'جميع المعالجات')),
+          SizedBox(width: 10),
+          Expanded(
+            child: _Filter(label: 'كرت الشاشة', value: 'جميع كروت الشاشة'),
+          ),
+          SizedBox(width: 10),
+          Expanded(child: _Filter(label: 'حجم الشاشة', value: 'جميع الأحجام')),
+        ],
+      ),
     ),
   );
 }
@@ -405,15 +391,72 @@ class InventoryFilters extends StatelessWidget {
 class _Filter extends StatelessWidget {
   const _Filter({required this.label, required this.value});
   final String label, value;
+
   @override
   Widget build(BuildContext context) => DropdownButtonFormField<String>(
     initialValue: value,
     isExpanded: true,
+    alignment: AlignmentDirectional.centerEnd,
+    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+    dropdownColor: Colors.white,
+    menuMaxHeight: 220,
     decoration: InputDecoration(
+      filled: true,
+      fillColor: Colors.white,
       labelText: label,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      contentPadding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 10),
+      constraints: const BoxConstraints(minHeight: 42, maxHeight: 46),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      ),
     ),
-    items: [DropdownMenuItem(value: value, child: Text(value))],
+    selectedItemBuilder: (context) => [
+      value,
+    ].map((item) {
+      return Align(
+        alignment: AlignmentDirectional.centerEnd,
+        child: Text(
+          item,
+          textDirection: TextDirection.rtl,
+          textAlign: TextAlign.right,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.text,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }).toList(),
+    items: [
+      DropdownMenuItem<String>(
+        value: value,
+        alignment: AlignmentDirectional.centerEnd,
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Text(
+            value,
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              color: AppColors.text,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    ],
     onChanged: (_) {},
   );
 }
@@ -425,67 +468,258 @@ class InventoryTable extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
   });
+
   final List<InventoryItem> items;
   final ValueChanged<InventoryItem> onEdit, onDelete;
+
+  static const _columnWidths = [
+    120.0,
+    120.0,
+    120.0,
+    130.0,
+    110.0,
+    82.0,
+    90.0,
+    92.0,
+    96.0,
+    120.0,
+  ];
+
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: AppColors.border),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('الشركة')),
-          DataColumn(label: Text('الموديل')),
-          DataColumn(label: Text('المعالج')),
-          DataColumn(label: Text('كرت الشاشة')),
-          DataColumn(label: Text('حجم الشاشة')),
-          DataColumn(label: Text('لمس')),
-          DataColumn(label: Text('2 في 1')),
-          DataColumn(label: Text('الكمية')),
-          DataColumn(label: Text('الإجراءات')),
-        ],
-        rows: items
-            .map(
-              (item) => DataRow(
-                cells: [
-                  DataCell(Text(item.brand)),
-                  DataCell(Text(item.model)),
-                  DataCell(Text(item.cpu)),
-                  DataCell(Text(item.gpu)),
-                  DataCell(Text(item.screen)),
-                  DataCell(Text(item.touch ? 'نعم' : 'لا')),
-                  DataCell(Text(item.convertible ? 'نعم' : 'لا')),
-                  DataCell(Chip(label: Text('${item.quantity}'))),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          tooltip: 'تعديل',
-                          icon: const Icon(Icons.edit_outlined),
-                          onPressed: () => onEdit(item),
-                        ),
-                        IconButton(
-                          tooltip: 'حذف',
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: AppColors.error,
-                          ),
-                          onPressed: () => onDelete(item),
-                        ),
-                      ],
-                    ),
+  Widget build(BuildContext context) => Directionality(
+    textDirection: TextDirection.rtl,
+    child: Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 1200),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                dataTableTheme: Theme.of(context).dataTableTheme.copyWith(
+                  headingTextStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text,
                   ),
-                ],
+                  dataTextStyle: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.text,
+                  ),
+                  headingRowColor: const WidgetStatePropertyAll(
+                    AppColors.surfaceMuted,
+                  ),
+                ),
               ),
-            )
-            .toList(),
+              child: DataTable(
+                columnSpacing: 10,
+                horizontalMargin: 12,
+                headingRowHeight: 46,
+                dataRowMinHeight: 54,
+                dataRowMaxHeight: 58,
+                dividerThickness: 1,
+                border: TableBorder(
+                  horizontalInside: BorderSide(color: AppColors.border),
+                  verticalInside: BorderSide(
+                    color: AppColors.border.withAlpha(120),
+                  ),
+                  top: BorderSide(color: AppColors.border),
+                  left: BorderSide(color: AppColors.border),
+                  right: BorderSide(color: AppColors.border),
+                  bottom: BorderSide(color: AppColors.border),
+                ),
+                columns: [
+                  for (var i = 0; i < _columnHeaders.length; i++)
+                    DataColumn(
+                      label: SizedBox(
+                        width: _columnWidths[i],
+                        child: Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: Text(
+                            _columnHeaders[i],
+                            textAlign: TextAlign.right,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+                rows: items
+                    .map(
+                      (item) => DataRow(
+                        color: WidgetStateProperty.resolveWith((states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return AppColors.lightBlue.withAlpha(80);
+                          }
+                          return Colors.white;
+                        }),
+                        cells: [
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.brand),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.model),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.cpu),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.gpu),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.screen),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.touch ? 'نعم' : 'لا'),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Text(item.convertible ? 'نعم' : 'لا'),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightBlue,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Text(
+                                  '${item.quantity}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: item.quantity > 0
+                                      ? AppColors.successLight
+                                      : AppColors.warningLight,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Text(
+                                  item.quantity > 0 ? 'مطابق' : 'غير مطابق',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: item.quantity > 0
+                                        ? AppColors.success
+                                        : AppColors.warning,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                textDirection: TextDirection.rtl,
+                                children: [
+                                  IconButton(
+                                    tooltip: 'تعديل',
+                                    visualDensity: VisualDensity.compact,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 28,
+                                      minHeight: 28,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                    onPressed: () => onEdit(item),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  IconButton(
+                                    tooltip: 'حذف',
+                                    visualDensity: VisualDensity.compact,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 28,
+                                      minHeight: 28,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      size: 18,
+                                      color: AppColors.error,
+                                    ),
+                                    onPressed: () => onDelete(item),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ),
+        ),
       ),
     ),
   );
+
+  static const List<String> _columnHeaders = [
+    'الشركة',
+    'الموديل',
+    'المعالج',
+    'كرت الشاشة',
+    'حجم الشاشة',
+    'لمس',
+    '2 في 1',
+    'الكمية',
+    'الحالة',
+    'الإجراءات',
+  ];
 }
 
 List<Choice> filterModelChoicesByCpu(
