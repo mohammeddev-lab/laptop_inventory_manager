@@ -16,7 +16,7 @@ class DashboardHeader extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Container(
         height: 68,
-        padding: const EdgeInsets.symmetric(
+        padding: const EdgeInsetsDirectional.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
@@ -25,7 +25,7 @@ class DashboardHeader extends StatelessWidget {
           border: Border(bottom: BorderSide(color: AppColors.border)),
           borderRadius: AppRadius.largeAll,
         ),
-        alignment: Alignment.centerRight,
+        alignment: AlignmentDirectional.centerStart,
         child: Text(
           title,
           textAlign: TextAlign.right,

@@ -4,39 +4,54 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../inventory/data/inventory_repository.dart';
 import 'header_widget.dart';
 import 'stat_card_widget.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen(this.repo, {super.key});
 
-  final dynamic repo;
+  final InventoryRepository repo;
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
   Widget build(BuildContext context) {
+    final currentSession = widget.repo.currentSession();
+    final summary = widget.repo.summary(sessionId: currentSession?.id);
+    final companyReport = widget.repo.report('b.name', sessionId: currentSession?.id);
+    final cpuReport = widget.repo.report('c.name', sessionId: currentSession?.id);
+    final gpuReport = widget.repo.report('g.name', sessionId: currentSession?.id);
+    final screenReport = widget.repo.report('s.name', sessionId: currentSession?.id);
+    final sessions = widget.repo.listSessions();
+    final completedSessions = sessions.where((s) => s.status == 'مكتمل').length;
+
     final statCards = [
       StatCard(
         label: 'إجمالي الحاسبات',
-        value: '18',
-        accent: const Color(0xff2d6df6),
+        value: '${summary.totalQuantity}',
+        accent: AppColors.primary,
         index: 0,
       ),
       StatCard(
-        label: 'إجمالي الموديلات',
-        value: '9',
-        accent: const Color(0xffedf3ff),
+        label: 'عدد الموديلات',
+        value: '${summary.modelCount}',
+        accent: AppColors.lightBlue,
         index: 1,
       ),
       StatCard(
-        label: 'إجمالي الشركات',
-        value: '5',
-        accent: const Color(0xffedf3ff),
+        label: 'عدد الشركات',
+        value: '${summary.companyCount}',
+        accent: AppColors.lightBlue,
         index: 2,
       ),
       StatCard(
-        label: 'الإضافات',
-        value: '4',
-        accent: const Color(0xffedf3ff),
+        label: 'اكتملت الجرود',
+        value: '$completedSessions',
+        accent: AppColors.lightBlue,
         index: 3,
       ),
     ];
@@ -44,36 +59,31 @@ class DashboardScreen extends StatelessWidget {
     final panels = [
       _ReportPanel(
         title: 'الجرد حسب الشركة',
-        rows: const [
-          _ReportRow(name: 'ThinkPad X1 Carbon', count: 10),
-          _ReportRow(name: 'HP ProBook 450', count: 8),
-          _ReportRow(name: 'Dell XPS 15', count: 3),
-          _ReportRow(name: 'Asus ZenBook 14', count: 5),
-        ],
+        rows: companyReport
+            .map((r) => _ReportRow(
+                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .toList(),
       ),
       _ReportPanel(
         title: 'الجرد حسب المعالج',
-        rows: const [
-          _ReportRow(name: 'Intel Core i7', count: 12),
-          _ReportRow(name: 'Ryzen 7', count: 9),
-          _ReportRow(name: 'Intel Core i5', count: 7),
-        ],
+        rows: cpuReport
+            .map((r) => _ReportRow(
+                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .toList(),
       ),
       _ReportPanel(
         title: 'الجرد حسب كرت الشاشة',
-        rows: const [
-          _ReportRow(name: 'RTX 4060', count: 5),
-          _ReportRow(name: 'GTX 1650', count: 4),
-          _ReportRow(name: 'Intel Iris Xe', count: 10),
-        ],
+        rows: gpuReport
+            .map((r) => _ReportRow(
+                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .toList(),
       ),
       _ReportPanel(
-        title: 'الجرد حسب الحجم',
-        rows: const [
-          _ReportRow(name: '15.6', count: 14),
-          _ReportRow(name: '14', count: 9),
-          _ReportRow(name: '13.3', count: 7),
-        ],
+        title: 'الجرد حسب حجم الشاشة',
+        rows: screenReport
+            .map((r) => _ReportRow(
+                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .toList(),
       ),
     ];
 
@@ -84,7 +94,7 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const DashboardHeader(title: 'مكتب الشهد'),
+            DashboardHeader(title: 'لوحة التحكم${currentSession != null ? ' — ${currentSession.name}' : ''}'),
             const SizedBox(height: 18),
             LayoutBuilder(
               builder: (context, constraints) => Row(
@@ -93,8 +103,8 @@ class DashboardScreen extends StatelessWidget {
                   final card = entry.value;
                   return Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(
-                        left: index < statCards.length - 1 ? AppSpacing.md : 0,
+                      padding: EdgeInsetsDirectional.only(
+                        end: index < statCards.length - 1 ? AppSpacing.md : 0,
                       ),
                       child: card,
                     ),
@@ -104,31 +114,38 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.section),
             Expanded(
-              child: GridView.count(
-                crossAxisCount: MediaQuery.sizeOf(context).width > 1100 ? 2 : 1,
-                mainAxisSpacing: AppSpacing.section,
-                crossAxisSpacing: AppSpacing.section,
-                childAspectRatio: 1.8,
-                children: panels.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final panel = entry.value;
-                  return TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    duration: Duration(milliseconds: 500 + index * 150),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, child) {
-                      return Opacity(
-                        opacity: value,
-                        child: Transform.translate(
-                          offset: Offset(0, 18 * (1 - value)),
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: panel,
-                  );
-                }).toList(),
-              ),
+              child: panels.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'لا توجد بيانات جرد حالياً',
+                        style: TextStyle(color: AppColors.secondary, fontSize: 14),
+                      ),
+                    )
+                  : GridView.count(
+                      crossAxisCount: MediaQuery.sizeOf(context).width > 1100 ? 2 : 1,
+                      mainAxisSpacing: AppSpacing.section,
+                      crossAxisSpacing: AppSpacing.section,
+                      childAspectRatio: 1.8,
+                      children: panels.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final panel = entry.value;
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0.0, end: 1.0),
+                          duration: Duration(milliseconds: 500 + index * 150),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, child) {
+                            return Opacity(
+                              opacity: value,
+                              child: Transform.translate(
+                                offset: Offset(0, 18 * (1 - value)),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: panel,
+                        );
+                      }).toList(),
+                    ),
             ),
           ],
         ),
@@ -165,13 +182,13 @@ class _ReportPanel extends StatelessWidget {
           border: Border.all(color: AppColors.border),
           borderRadius: AppRadius.largeAll,
         ),
-        child: Column(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(title, style: AppTypography.cardTitle),
+                const SizedBox(width: 8),
                 Text(
                   '${rows.length}',
                   style: const TextStyle(
@@ -187,6 +204,26 @@ class _ReportPanel extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: Row(
                   children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        row.name,
+                        textAlign: TextAlign.right,
+                        style: AppTypography.tableBody,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 28,
+                      child: Text(
+                        row.count.toString(),
+                        textAlign: TextAlign.center,
+                        style: AppTypography.tableHeader.copyWith(
+                          color: AppColors.text,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Container(
                         height: 8,
@@ -206,26 +243,6 @@ class _ReportPanel extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 28,
-                      child: Text(
-                        row.count.toString(),
-                        textAlign: TextAlign.center,
-                        style: AppTypography.tableHeader.copyWith(
-                          color: AppColors.text,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        row.name,
-                        textAlign: TextAlign.right,
-                        style: AppTypography.tableBody,
                       ),
                     ),
                   ],

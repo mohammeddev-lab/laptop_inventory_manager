@@ -20,6 +20,7 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPrimary = accent == AppColors.primary;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 450 + index * 120),
@@ -37,24 +38,25 @@ class StatCard extends StatelessWidget {
         height: 96,
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: accent,
+          color: isPrimary ? AppColors.primary : AppColors.surface,
           borderRadius: AppRadius.largeAll,
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
+          textDirection: TextDirection.rtl,
           children: [
             Container(
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: isPrimary ? AppColors.surface : AppColors.lightBlue,
                 borderRadius: AppRadius.mediumAll,
               ),
               alignment: Alignment.center,
               child: Text(
                 value,
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: isPrimary ? AppColors.primary : AppColors.primary,
                   fontWeight: FontWeight.w800,
                   fontSize: 18,
                 ),
@@ -63,12 +65,12 @@ class StatCard extends StatelessWidget {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   label,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: AppColors.text,
+                  style: TextStyle(
+                    color: isPrimary ? AppColors.surface : AppColors.text,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),

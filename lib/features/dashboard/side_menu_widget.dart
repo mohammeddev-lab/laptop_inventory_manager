@@ -24,11 +24,9 @@ class SideMenuWidget extends StatelessWidget {
       (Icons.settings_outlined, 'الإعدادات'),
     ];
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Container(
+    return Container(
         width: 228,
-        padding: const EdgeInsets.fromLTRB(
+        padding: const EdgeInsetsDirectional.fromSTEB(
           AppSpacing.md,
           AppSpacing.xl,
           AppSpacing.md,
@@ -36,16 +34,43 @@ class SideMenuWidget extends StatelessWidget {
         ),
         decoration: const BoxDecoration(
           color: AppColors.surface,
-          border: Border(left: BorderSide(color: AppColors.border)),
+          border: BorderDirectional(
+            end: BorderSide(color: AppColors.border),
+          ),
         ),
         child: Column(
           children: [
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              'مكتب الشهد',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.text,
-                fontWeight: FontWeight.w800,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'نظام جرد الحاسبات',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.text,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: AppRadius.mediumAll,
+                    ),
+                    child: const Icon(
+                      Icons.inventory_2_outlined,
+                      color: AppColors.surface,
+                      size: 18,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -59,7 +84,7 @@ class SideMenuWidget extends StatelessWidget {
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeInOut,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.surface,
+                    color: isSelected ? AppColors.primary : Colors.transparent,
                     borderRadius: AppRadius.mediumAll,
                   ),
                   child: Material(
@@ -73,17 +98,18 @@ class SideMenuWidget extends StatelessWidget {
                           vertical: AppSpacing.md,
                         ),
                         child: Row(
-                          textDirection: TextDirection.rtl,
-                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text(
-                              item.$2,
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? AppColors.surface
-                                    : AppColors.text,
-                                fontWeight: FontWeight.w600,
+                            Expanded(
+                              child: Text(
+                                item.$2,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? AppColors.surface
+                                      : AppColors.text,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -104,12 +130,34 @@ class SideMenuWidget extends StatelessWidget {
             }),
             const Spacer(),
             Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: Text('تحديث البيانات', style: AppTypography.caption),
+              padding: const EdgeInsetsDirectional.only(
+                bottom: AppSpacing.md,
+                top: AppSpacing.sm,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: AppRadius.mediumAll,
+                ),
+                child: Row(
+                  children: [
+                    Text('نظام جرد الحاسبات v1.0', style: AppTypography.caption),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.info_outline,
+                      size: 14,
+                      color: AppColors.secondary,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
