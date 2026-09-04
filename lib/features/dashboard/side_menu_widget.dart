@@ -26,141 +26,139 @@ class SideMenuWidget extends StatelessWidget {
     ];
 
     return Container(
-        width: 228,
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          AppSpacing.md,
-          AppSpacing.xl,
-          AppSpacing.md,
-          AppSpacing.sm,
-        ),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: BorderDirectional(
-            end: BorderSide(color: AppColors.border),
-          ),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.sm),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    'نظام جرد الحاسبات',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.text,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: AppRadius.mediumAll,
-                    ),
-                    child: const Icon(
-                      Icons.inventory_2_outlined,
-                      color: AppColors.surface,
-                      size: 18,
-                    ),
-                  ),
-                ],
-              ),
+      width: 228,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.md,
+        AppSpacing.xl,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: BorderDirectional(end: BorderSide(color: AppColors.border)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md,
             ),
-            const SizedBox(height: AppSpacing.xl),
-            ...List.generate(destinations.length, (index) {
-              final item = destinations[index];
-              final isSelected = index == selected;
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeInOut,
+            child: Row(
+              children: [
+                Text(
+                  'نظام جرد الحاسبات',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    color: AppColors.primary,
                     borderRadius: AppRadius.mediumAll,
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: AppRadius.mediumAll,
-                      onTap: () => onSelected(index),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.md,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item.$2,
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? AppColors.surface
-                                      : AppColors.text,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
+                  child: const Icon(
+                    Icons.inventory_2_outlined,
+                    color: AppColors.surface,
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          ...List.generate(destinations.length, (index) {
+            final item = destinations[index];
+            final isSelected = index == selected;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : Colors.transparent,
+                  borderRadius: AppRadius.mediumAll,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: AppRadius.mediumAll,
+                    onTap: () => onSelected(index),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.md,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.$2,
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? AppColors.surface
+                                    : AppColors.text,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Icon(
-                              item.$1,
-                              color: isSelected
-                                  ? AppColors.surface
-                                  : AppColors.primary,
-                              size: 18,
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 10),
+                          Icon(
+                            item.$1,
+                            color: isSelected
+                                ? AppColors.surface
+                                : AppColors.primary,
+                            size: 18,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              );
-            }),
-            const Spacer(),
-            const AlShahadLogo(compact: true),
-            const SizedBox(height: AppSpacing.sm),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
-                bottom: AppSpacing.md,
-                top: AppSpacing.sm,
               ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: AppRadius.mediumAll,
-                ),
-                child: Row(
-                  children: [
-                    Text('نظام جرد الحاسبات v1.0', style: AppTypography.caption),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.info_outline,
-                      size: 14,
-                      color: AppColors.secondary,
-                    ),
-                  ],
-                ),
+            );
+          }),
+          const Spacer(),
+          const AlShahadLogo(compact: true),
+          const SizedBox(height: AppSpacing.sm),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              bottom: AppSpacing.md,
+              top: AppSpacing.sm,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: AppRadius.mediumAll,
+              ),
+              child: Row(
+                children: [
+                  Text('نظام جرد الحاسبات v1.0', style: AppTypography.caption),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: AppColors.secondary,
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }

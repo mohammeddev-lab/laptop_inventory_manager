@@ -13,9 +13,7 @@ class AlShahadLogo extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: compact ? 190 : 310,
     height: compact ? 82 : 220,
-    child: CustomPaint(
-      painter: _AlShahadLogoPainter(compact: compact),
-    ),
+    child: CustomPaint(painter: _AlShahadLogoPainter(compact: compact)),
   );
 }
 
@@ -68,7 +66,10 @@ class _AlShahadLogoPainter extends CustomPainter {
     )..layout();
     textPainter.paint(
       canvas,
-      Offset(center.dx - textPainter.width / 2 - 4 * scale, center.dy - textPainter.height / 2),
+      Offset(
+        center.dx - textPainter.width / 2 - 4 * scale,
+        center.dy - textPainter.height / 2,
+      ),
     );
 
     if (!compact) {

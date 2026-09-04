@@ -33,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       StatCard(
         label: 'إجمالي الحاسبات',
         value: '${summary.totalQuantity}',
-        accent: AppColors.primary,
+        accent: AppColors.lightBlue,
         index: 0,
       ),
       StatCard(
