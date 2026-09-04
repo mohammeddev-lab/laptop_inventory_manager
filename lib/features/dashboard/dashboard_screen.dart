@@ -22,10 +22,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final currentSession = widget.repo.currentSession();
     final summary = widget.repo.summary(sessionId: currentSession?.id);
-    final companyReport = widget.repo.report('b.name', sessionId: currentSession?.id);
-    final cpuReport = widget.repo.report('c.name', sessionId: currentSession?.id);
-    final gpuReport = widget.repo.report('g.name', sessionId: currentSession?.id);
-    final screenReport = widget.repo.report('s.name', sessionId: currentSession?.id);
+    final companyReport = widget.repo.report(
+      'b.name',
+      sessionId: currentSession?.id,
+    );
+    final cpuReport = widget.repo.report(
+      'c.name',
+      sessionId: currentSession?.id,
+    );
+    final gpuReport = widget.repo.report(
+      'g.name',
+      sessionId: currentSession?.id,
+    );
+    final screenReport = widget.repo.report(
+      's.name',
+      sessionId: currentSession?.id,
+    );
     final sessions = widget.repo.listSessions();
     final completedSessions = sessions.where((s) => s.status == 'مكتمل').length;
 
@@ -60,29 +72,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _ReportPanel(
         title: 'الجرد حسب الشركة',
         rows: companyReport
-            .map((r) => _ReportRow(
-                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .map(
+              (r) => _ReportRow(
+                name: r['name'] as String,
+                count: (r['quantity'] as int?) ?? 0,
+              ),
+            )
             .toList(),
       ),
       _ReportPanel(
         title: 'الجرد حسب المعالج',
         rows: cpuReport
-            .map((r) => _ReportRow(
-                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .map(
+              (r) => _ReportRow(
+                name: r['name'] as String,
+                count: (r['quantity'] as int?) ?? 0,
+              ),
+            )
             .toList(),
       ),
       _ReportPanel(
         title: 'الجرد حسب كرت الشاشة',
         rows: gpuReport
-            .map((r) => _ReportRow(
-                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .map(
+              (r) => _ReportRow(
+                name: r['name'] as String,
+                count: (r['quantity'] as int?) ?? 0,
+              ),
+            )
             .toList(),
       ),
       _ReportPanel(
         title: 'الجرد حسب حجم الشاشة',
         rows: screenReport
-            .map((r) => _ReportRow(
-                name: r['name'] as String, count: (r['quantity'] as int?) ?? 0))
+            .map(
+              (r) => _ReportRow(
+                name: r['name'] as String,
+                count: (r['quantity'] as int?) ?? 0,
+              ),
+            )
             .toList(),
       ),
     ];
@@ -94,7 +122,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DashboardHeader(title: 'لوحة التحكم${currentSession != null ? ' — ${currentSession.name}' : ''}'),
+            DashboardHeader(
+              title:
+                  'لوحة التحكم${currentSession != null ? ' — ${currentSession.name}' : ''}',
+            ),
             const SizedBox(height: 18),
             LayoutBuilder(
               builder: (context, constraints) => Row(
@@ -118,11 +149,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ? const Center(
                       child: Text(
                         'لا توجد بيانات جرد حالياً',
-                        style: TextStyle(color: AppColors.secondary, fontSize: 14),
+                        style: TextStyle(
+                          color: AppColors.secondary,
+                          fontSize: 14,
+                        ),
                       ),
                     )
                   : GridView.count(
-                      crossAxisCount: MediaQuery.sizeOf(context).width > 1100 ? 2 : 1,
+                      crossAxisCount: MediaQuery.sizeOf(context).width > 1100
+                          ? 2
+                          : 1,
                       mainAxisSpacing: AppSpacing.section,
                       crossAxisSpacing: AppSpacing.section,
                       childAspectRatio: 1.8,
@@ -182,7 +218,7 @@ class _ReportPanel extends StatelessWidget {
           border: Border.all(color: AppColors.border),
           borderRadius: AppRadius.largeAll,
         ),
-          child: Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(

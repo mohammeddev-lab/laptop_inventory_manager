@@ -595,7 +595,12 @@ class _InventoryPageState extends State<InventoryPage> {
       verticalAlign: excel_pkg.VerticalAlign.Center,
     );
 
-    void setCell(int column, int row, excel_pkg.CellValue value, excel_pkg.CellStyle style) {
+    void setCell(
+      int column,
+      int row,
+      excel_pkg.CellValue value,
+      excel_pkg.CellStyle style,
+    ) {
       final cell = sheet.cell(
         excel_pkg.CellIndex.indexByColumnRow(
           columnIndex: column,
@@ -609,7 +614,10 @@ class _InventoryPageState extends State<InventoryPage> {
     const columnCount = 11;
     sheet.merge(
       excel_pkg.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
-      excel_pkg.CellIndex.indexByColumnRow(columnIndex: columnCount - 1, rowIndex: 0),
+      excel_pkg.CellIndex.indexByColumnRow(
+        columnIndex: columnCount - 1,
+        rowIndex: 0,
+      ),
       customValue: excel_pkg.TextCellValue('تقرير جرد الحاسبات المحمولة'),
     );
     setCell(
@@ -624,7 +632,10 @@ class _InventoryPageState extends State<InventoryPage> {
         'اسم الجرد: ${selectedSess.name}    |    التاريخ: ${selectedSess.date.day}/${selectedSess.date.month}/${selectedSess.date.year}    |    الحالة: ${selectedSess.status}    |    عدد السجلات: ${rows.length}';
     sheet.merge(
       excel_pkg.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1),
-      excel_pkg.CellIndex.indexByColumnRow(columnIndex: columnCount - 1, rowIndex: 1),
+      excel_pkg.CellIndex.indexByColumnRow(
+        columnIndex: columnCount - 1,
+        rowIndex: 1,
+      ),
       customValue: excel_pkg.TextCellValue(sessionInfo),
     );
     setCell(0, 1, excel_pkg.TextCellValue(sessionInfo), infoStyle);
@@ -673,8 +684,12 @@ class _InventoryPageState extends State<InventoryPage> {
             ? (status == 'مطابق'
                   ? statusStyle
                   : statusStyle.copyWith(
-                      backgroundColorHexVal: excel_pkg.ExcelColor.fromHexString('FFFFF3DC'),
-                      fontColorHexVal: excel_pkg.ExcelColor.fromHexString('FFB76B00'),
+                      backgroundColorHexVal: excel_pkg.ExcelColor.fromHexString(
+                        'FFFFF3DC',
+                      ),
+                      fontColorHexVal: excel_pkg.ExcelColor.fromHexString(
+                        'FFB76B00',
+                      ),
                     ))
             : (rowIndex.isEven ? dataStyle : alternateDataStyle);
         setCell(colIndex, rowIndex + 4, excelValue, style);
