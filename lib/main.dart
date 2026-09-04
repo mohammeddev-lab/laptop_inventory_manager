@@ -205,6 +205,7 @@ class _InventoryPageState extends State<InventoryPage> {
   String query = '';
   int? sessionId;
   int? filterBrandId;
+  int? filterModelId;
   int? filterCpuId;
   int? filterGpuId;
   int? filterScreenId;
@@ -234,8 +235,13 @@ class _InventoryPageState extends State<InventoryPage> {
     );
 
     final filteredItems = items.where((item) {
+      if (filterModelId != null && item.modelId != filterModelId) return false;
       if (filterCpuId != null && item.cpuId != filterCpuId) return false;
-      if (filterGpuId != null && item.gpuModelId != filterGpuId) return false;
+      if (filterGpuId != null) {
+        final gpuModels = widget.repo.choices('gpu_models', gpuId: filterGpuId);
+        final gpuModelIds = gpuModels.map((m) => m.id).toSet();
+        if (!gpuModelIds.contains(item.gpuModelId)) return false;
+      }
       if (filterScreenId != null && item.screenId != filterScreenId) return false;
       return true;
     }).toList();
@@ -346,15 +352,21 @@ class _InventoryPageState extends State<InventoryPage> {
           InventoryFilters(
             repo: widget.repo,
             filterBrandId: filterBrandId,
+            filterModelId: filterModelId,
             filterCpuId: filterCpuId,
             filterGpuId: filterGpuId,
             filterScreenId: filterScreenId,
-            onBrandChanged: (v) => setState(() => filterBrandId = v),
+            onBrandChanged: (v) => setState(() {
+              filterBrandId = v;
+              filterModelId = null;
+            }),
+            onModelChanged: (v) => setState(() => filterModelId = v),
             onCpuChanged: (v) => setState(() => filterCpuId = v),
             onGpuChanged: (v) => setState(() => filterGpuId = v),
             onScreenChanged: (v) => setState(() => filterScreenId = v),
             onClear: () => setState(() {
               filterBrandId = null;
+              filterModelId = null;
               filterCpuId = null;
               filterGpuId = null;
               filterScreenId = null;
@@ -364,10 +376,10 @@ class _InventoryPageState extends State<InventoryPage> {
           Expanded(
             child: filteredItems.isEmpty
                 ? EmptyState(
-                    title: query.isEmpty && filterBrandId == null && filterCpuId == null && filterGpuId == null && filterScreenId == null
+                    title: query.isEmpty && filterBrandId == null && filterModelId == null && filterCpuId == null && filterGpuId == null && filterScreenId == null
                         ? 'لا توجد حاسبات في هذا الجرد'
                         : 'لا توجد سجلات جرد مطابقة لعملية البحث الحالية.',
-                    message: query.isEmpty && filterBrandId == null && filterCpuId == null && filterGpuId == null && filterScreenId == null
+                    message: query.isEmpty && filterBrandId == null && filterModelId == null && filterCpuId == null && filterGpuId == null && filterScreenId == null
                         ? 'أضف أول حاسبة إلى الجرد الحالي.'
                         : 'غيّر عبارة البحث أو أعد تعيين الفلاتر.',
                     action: PrimaryButton(
@@ -380,6 +392,7 @@ class _InventoryPageState extends State<InventoryPage> {
                     items: filteredItems,
                     onEdit: (item) => _openForm(item),
                     onDelete: _confirmDelete,
+                    onView: (item) => _showDetailsDialog(item),
                     isCompletedSession: selectedSession?.status == 'مكتمل',
                   ),
           ),
@@ -722,6 +735,181 @@ class _InventoryPageState extends State<InventoryPage> {
       onSaved: () => setState(() {}),
     ),
   );
+  void _showDetailsDialog(InventoryItem item) => showDialog(
+    context: context,
+    builder: (dialog) => Directionality(
+      textDirection: TextDirection.rtl,
+      child: Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.dialogAll),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'تفاصيل الحاسبة',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.text,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'معلومات ومواصفات الحاسبة',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(dialog),
+                        icon: const Icon(Icons.close_rounded, color: AppColors.secondary),
+                        tooltip: 'إغلاق',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1, color: AppColors.border),
+                  const SizedBox(height: 18),
+                  _detailSection('معلومات الحاسبة', [
+                    _detailRow('الشركة', item.brand),
+                    _detailRow('الموديل', item.model),
+                  ]),
+                  const SizedBox(height: 16),
+                  _detailSection('المعالج', [
+                    _detailRow('نوع المعالج', item.cpu),
+                    _detailRow('جيل المعالج', item.cpuGeneration ?? '—'),
+                    _detailRow('فئة المعالج', item.cpuClass ?? '—'),
+                  ]),
+                  const SizedBox(height: 16),
+                  _detailSection('الشاشة والكرت', [
+                    _detailRow('كرت الشاشة', item.gpu),
+                    _detailRow('حجم الشاشة', item.screen),
+                    _detailRow('شاشة لمس', item.touch ? 'نعم' : 'لا'),
+                    _detailRow('حاسبة 2 في 1', item.convertible ? 'نعم' : 'لا'),
+                  ]),
+                  const SizedBox(height: 16),
+                  _detailSection('المخزون', [
+                    _detailRow('الكمية', '${item.quantity}'),
+                    _detailRow(
+                      'الحالة',
+                      item.quantity > 0 ? 'مطابق' : 'غير مطابق',
+                      valueColor: item.quantity > 0 ? AppColors.success : AppColors.warning,
+                    ),
+                  ]),
+                  if (item.notes.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _detailSection('الملاحظات', [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceMuted,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Text(
+                          item.notes,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.text,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ]),
+                  ],
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: SizedBox(
+                      width: 120,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialog),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.border),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text('إغلاق'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _detailSection(String title, List<Widget> children) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
+        ),
+      ),
+      const SizedBox(height: 10),
+      ...children,
+    ],
+  );
+
+  Widget _detailRow(String label, String value, {Color? valueColor}) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 130,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.secondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              color: valueColor ?? AppColors.text,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
   void _confirmDelete(InventoryItem item) => showDialog(
     context: context,
     builder: (dialog) => Directionality(
@@ -775,10 +963,12 @@ class InventoryFilters extends StatelessWidget {
     super.key,
     required this.repo,
     this.filterBrandId,
+    this.filterModelId,
     this.filterCpuId,
     this.filterGpuId,
     this.filterScreenId,
     this.onBrandChanged,
+    this.onModelChanged,
     this.onCpuChanged,
     this.onGpuChanged,
     this.onScreenChanged,
@@ -787,10 +977,12 @@ class InventoryFilters extends StatelessWidget {
 
   final InventoryRepository repo;
   final int? filterBrandId;
+  final int? filterModelId;
   final int? filterCpuId;
   final int? filterGpuId;
   final int? filterScreenId;
   final ValueChanged<int?>? onBrandChanged;
+  final ValueChanged<int?>? onModelChanged;
   final ValueChanged<int?>? onCpuChanged;
   final ValueChanged<int?>? onGpuChanged;
   final ValueChanged<int?>? onScreenChanged;
@@ -799,11 +991,12 @@ class InventoryFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brands = repo.choices('brands');
+    final models = repo.choices('models', brandId: filterBrandId);
     final cpus = repo.choices('cpus');
-    final gpuModels = repo.choices('gpu_models');
+    final gpus = repo.choices('gpus');
     final screens = repo.choices('screen_sizes');
 
-    final hasFilters = filterBrandId != null || filterCpuId != null || filterGpuId != null || filterScreenId != null;
+    final hasFilters = filterBrandId != null || filterModelId != null || filterCpuId != null || filterGpuId != null || filterScreenId != null;
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -825,6 +1018,15 @@ class InventoryFilters extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: _FilterDropdown(
+              label: 'الموديل',
+              items: models,
+              selectedId: filterModelId,
+              onChanged: onModelChanged,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _FilterDropdown(
               label: 'المعالج',
               items: cpus,
               selectedId: filterCpuId,
@@ -834,8 +1036,8 @@ class InventoryFilters extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: _FilterDropdown(
-              label: 'موديل كرت الشاشة',
-              items: gpuModels,
+              label: 'كرت الشاشة',
+              items: gpus,
               selectedId: filterGpuId,
               onChanged: onGpuChanged,
             ),
@@ -878,7 +1080,7 @@ class _FilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allLabel = 'جميع ${label == 'الشركة' ? 'الشركات' : label == 'المعالج' ? 'المعالجات' : label == 'كرت الشاشة' ? 'كروت الشاشة' : 'الأحجام'}';
+    final allLabel = 'جميع ${label == 'الشركة' ? 'الشركات' : label == 'الموديل' ? 'الموديلات' : label == 'المعالج' ? 'المعالجات' : label == 'كرت الشاشة' ? 'كروت الشاشة' : 'الأحجام'}';
 
     return DropdownButtonFormField<int>(
       initialValue: selectedId,
@@ -977,11 +1179,12 @@ class InventoryTable extends StatelessWidget {
     required this.items,
     required this.onEdit,
     required this.onDelete,
+    required this.onView,
     this.isCompletedSession = false,
   });
 
   final List<InventoryItem> items;
-  final ValueChanged<InventoryItem> onEdit, onDelete;
+  final ValueChanged<InventoryItem> onEdit, onDelete, onView;
   final bool isCompletedSession;
 
   static const _columnHeaders = [
@@ -998,19 +1201,49 @@ class InventoryTable extends StatelessWidget {
     'الإجراءات',
   ];
 
-  static const _columnWidths = [
-    60.0,
-    120.0,
-    120.0,
-    120.0,
-    130.0,
-    110.0,
-    82.0,
+  static const _minColumnWidths = [
+    55.0,
     90.0,
-    92.0,
-    96.0,
+    90.0,
+    90.0,
     100.0,
+    90.0,
+    60.0,
+    65.0,
+    70.0,
+    80.0,
+    85.0,
   ];
+
+  static const _flexWeights = [
+    0,
+    2,
+    2,
+    2,
+    2,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+  ];
+
+  List<double> _computeColumnWidths(double availableWidth) {
+    final horizontalMargin = 24.0;
+    final columnSpacing = 10.0 * (_columnHeaders.length - 1);
+    final usableWidth = availableWidth - horizontalMargin - columnSpacing;
+    final totalMinWidth = _minColumnWidths.reduce((a, b) => a + b);
+    final totalFlex = _flexWeights.fold(0, (a, b) => a + b);
+    final extraSpace = usableWidth - totalMinWidth;
+    if (extraSpace <= 0 || totalFlex == 0) {
+      return List<double>.from(_minColumnWidths);
+    }
+    final flexUnit = extraSpace / totalFlex;
+    return List<double>.generate(_columnHeaders.length, (i) {
+      return _minColumnWidths[i] + _flexWeights[i] * flexUnit;
+    });
+  }
 
   @override
   Widget build(BuildContext context) => Directionality(
@@ -1024,64 +1257,66 @@ class InventoryTable extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 1200),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                dataTableTheme: Theme.of(context).dataTableTheme.copyWith(
-                  headingTextStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text,
-                  ),
-                  dataTextStyle: const TextStyle(
-                    fontSize: 12.5,
-                    color: AppColors.text,
-                  ),
-                  headingRowColor: const WidgetStatePropertyAll(
-                    AppColors.surfaceMuted,
-                  ),
-                ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            dataTableTheme: Theme.of(context).dataTableTheme.copyWith(
+              headingTextStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text,
               ),
-              child: DataTable(
-                columnSpacing: 10,
-                horizontalMargin: 12,
-                headingRowHeight: 46,
-                dataRowMinHeight: 54,
-                dataRowMaxHeight: 58,
-                dividerThickness: 1,
-                border: TableBorder(
-                  horizontalInside: BorderSide(color: AppColors.border),
-                  verticalInside: BorderSide(
-                    color: AppColors.border.withAlpha(120),
-                  ),
-                  top: BorderSide(color: AppColors.border),
-                  left: BorderSide(color: AppColors.border),
-                  right: BorderSide(color: AppColors.border),
-                  bottom: BorderSide(color: AppColors.border),
-                ),
-                columns: [
-                  for (var i = 0; i < _columnHeaders.length; i++)
-                    DataColumn(
-                      label: SizedBox(
-                        width: _columnWidths[i],
-                        child: Align(
-                          alignment: i == _columnHeaders.length - 1
-                              ? AlignmentDirectional.centerStart
-                              : AlignmentDirectional.centerStart,
-                          child: Text(
-                            _columnHeaders[i],
-                            textAlign: i == _columnHeaders.length - 1
-                                ? TextAlign.left
-                                : TextAlign.right,
-                            overflow: TextOverflow.ellipsis,
+              dataTextStyle: const TextStyle(
+                fontSize: 12.5,
+                color: AppColors.text,
+              ),
+              headingRowColor: const WidgetStatePropertyAll(
+                AppColors.surfaceMuted,
+              ),
+            ),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth = constraints.maxWidth;
+              final columnWidths = _computeColumnWidths(availableWidth);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: availableWidth,
+                  child: DataTable(
+                    columnSpacing: 10,
+                    horizontalMargin: 12,
+                    headingRowHeight: 46,
+                    dataRowMinHeight: 54,
+                    dataRowMaxHeight: 58,
+                    dividerThickness: 1,
+                    border: TableBorder(
+                      horizontalInside: BorderSide(color: AppColors.border),
+                      verticalInside: BorderSide(
+                        color: AppColors.border.withAlpha(120),
+                      ),
+                      top: BorderSide(color: AppColors.border),
+                      left: BorderSide(color: AppColors.border),
+                      right: BorderSide(color: AppColors.border),
+                      bottom: BorderSide(color: AppColors.border),
+                    ),
+                    columns: [
+                      for (var i = 0; i < _columnHeaders.length; i++)
+                        DataColumn(
+                          label: SizedBox(
+                            width: columnWidths[i],
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                _columnHeaders[i],
+                                textAlign: i == _columnHeaders.length - 1
+                                    ? TextAlign.left
+                                    : TextAlign.right,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                ],
+                    ],
                 rows: items
                     .asMap()
                     .entries
@@ -1177,6 +1412,22 @@ class InventoryTable extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
+                                          tooltip: 'عرض التفاصيل',
+                                          visualDensity: VisualDensity.compact,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 28,
+                                            minHeight: 28,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.visibility_outlined,
+                                            size: 18,
+                                            color: AppColors.primary,
+                                          ),
+                                          onPressed: () => onView(entry.value),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        IconButton(
                                           tooltip: 'تعديل',
                                           visualDensity: VisualDensity.compact,
                                           padding: EdgeInsets.zero,
@@ -1216,7 +1467,9 @@ class InventoryTable extends StatelessWidget {
                     )
                     .toList(),
               ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

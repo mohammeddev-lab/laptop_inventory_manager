@@ -204,11 +204,21 @@ class InventoryRepository {
     String where;
     List<Object?> args;
     if (table == 'models') {
-      where = 'brand_id = ? AND name LIKE ?';
-      args = [brandId ?? -1, '%$search%'];
+      if (brandId != null) {
+        where = 'brand_id = ? AND name LIKE ?';
+        args = [brandId, '%$search%'];
+      } else {
+        where = 'name LIKE ?';
+        args = ['%$search%'];
+      }
     } else if (table == 'gpu_models') {
-      where = 'gpu_id = ? AND name LIKE ?';
-      args = [gpuId ?? -1, '%$search%'];
+      if (gpuId != null) {
+        where = 'gpu_id = ? AND name LIKE ?';
+        args = [gpuId, '%$search%'];
+      } else {
+        where = 'name LIKE ?';
+        args = ['%$search%'];
+      }
     } else {
       where = 'name LIKE ?';
       args = ['%$search%'];
