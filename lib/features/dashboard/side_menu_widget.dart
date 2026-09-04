@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/widgets/brand_logo.dart';
 
 class SideMenuWidget extends StatelessWidget {
   const SideMenuWidget({
@@ -129,6 +130,8 @@ class SideMenuWidget extends StatelessWidget {
               );
             }),
             const Spacer(),
+            const AlShahadLogo(compact: true),
+            const SizedBox(height: AppSpacing.sm),
             Padding(
               padding: const EdgeInsetsDirectional.only(
                 bottom: AppSpacing.md,

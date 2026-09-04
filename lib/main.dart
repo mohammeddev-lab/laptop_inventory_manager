@@ -13,6 +13,7 @@ import 'core/theme/app_spacing.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_typography.dart';
 import 'core/validators/validators.dart';
+import 'core/widgets/brand_logo.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/dashboard/side_menu_widget.dart';
 import 'features/inventory/data/import_service.dart';
@@ -38,7 +39,64 @@ class InventoryApp extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: child!,
     ),
-    home: const AppShell(),
+    home: const SplashGate(),
+  );
+}
+
+class SplashGate extends StatefulWidget {
+  const SplashGate({super.key});
+
+  @override
+  State<SplashGate> createState() => _SplashGateState();
+}
+
+class _SplashGateState extends State<SplashGate> {
+  bool showSplash = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted) setState(() => showSplash = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+    duration: const Duration(milliseconds: 350),
+    child: showSplash ? const _BrandSplash() : const AppShell(),
+  );
+}
+
+class _BrandSplash extends StatelessWidget {
+  const _BrandSplash();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    key: const ValueKey('brand-splash'),
+    backgroundColor: AppColors.surface,
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const AlShahadLogo(),
+          const SizedBox(height: 18),
+          Text(
+            'نظام جرد الحاسبات',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppColors.text,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 20),
+          const SizedBox(
+            width: 26,
+            height: 26,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
@@ -740,102 +798,131 @@ class _InventoryPageState extends State<InventoryPage> {
     builder: (dialog) => Directionality(
       textDirection: TextDirection.rtl,
       child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.dialogAll),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
+          constraints: const BoxConstraints(maxWidth: 820),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'تفاصيل الحاسبة',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.text,
+                  SizedBox(
+                    height: 50,
+                    child: Stack(
+                      children: [
+                        const Align(
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'تفاصيل الحاسبة',
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.text,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'معلومات ومواصفات الحاسبة',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColors.secondary,
+                              SizedBox(height: 4),
+                              Text(
+                                'معلومات ومواصفات الحاسبة',
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.secondary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(dialog),
-                        icon: const Icon(Icons.close_rounded, color: AppColors.secondary),
-                        tooltip: 'إغلاق',
-                      ),
-                    ],
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            onPressed: () => Navigator.pop(dialog),
+                            icon: const Icon(Icons.close_rounded, color: AppColors.secondary),
+                            tooltip: 'إغلاق',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Divider(height: 1, color: AppColors.border),
                   const SizedBox(height: 18),
-                  _detailSection('معلومات الحاسبة', [
-                    _detailRow('الشركة', item.brand),
-                    _detailRow('الموديل', item.model),
-                  ]),
-                  const SizedBox(height: 16),
-                  _detailSection('المعالج', [
-                    _detailRow('نوع المعالج', item.cpu),
-                    _detailRow('جيل المعالج', item.cpuGeneration ?? '—'),
-                    _detailRow('فئة المعالج', item.cpuClass ?? '—'),
-                  ]),
-                  const SizedBox(height: 16),
-                  _detailSection('الشاشة والكرت', [
-                    _detailRow('كرت الشاشة', item.gpu),
-                    _detailRow('حجم الشاشة', item.screen),
-                    _detailRow('شاشة لمس', item.touch ? 'نعم' : 'لا'),
-                    _detailRow('حاسبة 2 في 1', item.convertible ? 'نعم' : 'لا'),
-                  ]),
-                  const SizedBox(height: 16),
-                  _detailSection('المخزون', [
-                    _detailRow('الكمية', '${item.quantity}'),
-                    _detailRow(
-                      'الحالة',
-                      item.quantity > 0 ? 'مطابق' : 'غير مطابق',
-                      valueColor: item.quantity > 0 ? AppColors.success : AppColors.warning,
-                    ),
-                  ]),
-                  if (item.notes.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _detailSection('الملاحظات', [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceMuted,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Text(
-                          item.notes,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.text,
-                            height: 1.5,
+                  _identityCard(item),
+                  const SizedBox(height: 14),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final panels = [
+                        _detailPanel('الشاشة والكرت', Icons.desktop_windows_outlined, [
+                          _detailTile('كرت الشاشة', item.gpu, Icons.developer_board_outlined),
+                          _detailTile('حجم الشاشة', item.screen, Icons.aspect_ratio_outlined),
+                          _detailTile('شاشة لمس', item.touch ? 'نعم' : 'لا', Icons.touch_app_outlined),
+                          _detailTile('حاسبة 2 في 1', item.convertible ? 'نعم' : 'لا', Icons.flip_outlined),
+                        ]),
+                        _detailPanel('المعالج', Icons.memory_outlined, [
+                          _detailTile('نوع المعالج', item.cpu, Icons.memory_outlined),
+                          _detailTile('جيل المعالج', item.cpuGeneration ?? '—', Icons.looks_3_outlined),
+                          _detailTile('فئة المعالج', item.cpuClass ?? '—', Icons.category_outlined),
+                        ]),
+                        _detailPanel('المخزون', Icons.inventory_2_outlined, [
+                          _detailTile('الكمية', '${item.quantity}', Icons.tag_outlined),
+                          _detailTile(
+                            'الحالة',
+                            item.quantity > 0 ? 'مطابق' : 'غير مطابق',
+                            Icons.check_circle_outline,
+                            valueColor: item.quantity > 0 ? AppColors.success : AppColors.warning,
                           ),
-                        ),
-                      ),
-                    ]),
-                  ],
-                  const SizedBox(height: 20),
+                        ]),
+                        _detailPanel('ملاحظات', Icons.description_outlined, [
+                          _detailTile(
+                            'العطل / الملاحظات',
+                            item.notes.isEmpty ? 'لا توجد ملاحظات' : item.notes,
+                            Icons.content_paste_outlined,
+                            multiline: true,
+                          ),
+                        ]),
+                      ];
+                      if (constraints.maxWidth < 620) {
+                        return Column(
+                          children: panels
+                              .map((panel) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: panel,
+                                  ))
+                              .toList(),
+                        );
+                      }
+                      return Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: panels[0]),
+                              const SizedBox(width: 12),
+                              Expanded(child: panels[1]),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: panels[2]),
+                              const SizedBox(width: 12),
+                              Expanded(child: panels[3]),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
                   Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: SizedBox(
@@ -863,51 +950,122 @@ class _InventoryPageState extends State<InventoryPage> {
     ),
   );
 
-  Widget _detailSection(String title, List<Widget> children) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primary,
-        ),
-      ),
-      const SizedBox(height: 10),
-      ...children,
-    ],
-  );
-
-  Widget _detailRow(String label, String value, {Color? valueColor}) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
+  Widget _identityCard(InventoryItem item) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.border),
+      borderRadius: BorderRadius.circular(12),
+    ),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      textDirection: TextDirection.rtl,
       children: [
-        SizedBox(
-          width: 130,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.secondary,
-              fontWeight: FontWeight.w500,
-            ),
+        Expanded(
+          child: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              _identityValue('الشركة', item.brand, Icons.storefront_outlined),
+              const SizedBox(width: 12),
+              _identityValue('الموديل', item.model, Icons.sell_outlined),
+            ],
           ),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              color: valueColor ?? AppColors.text,
-              fontWeight: FontWeight.w600,
-            ),
+        const SizedBox(width: 16),
+        Container(
+          width: 148,
+          height: 94,
+          decoration: BoxDecoration(
+            color: AppColors.lightBlue,
+            borderRadius: BorderRadius.circular(10),
           ),
+          child: const Icon(Icons.laptop_mac_outlined, size: 56, color: AppColors.primary),
         ),
       ],
     ),
+  );
+
+  Widget _identityValue(String label, String value, IconData icon) => Expanded(
+    child: Container(
+      constraints: const BoxConstraints(minHeight: 82),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 12, color: AppColors.secondary)),
+                const SizedBox(height: 4),
+                Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          _detailIcon(icon),
+        ],
+      ),
+    ),
+  );
+
+  Widget _detailPanel(String title, IconData icon, List<Widget> children) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.border),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          textDirection: TextDirection.rtl,
+          children: [
+            _detailIcon(icon),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.primary)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ...children,
+      ],
+    ),
+  );
+
+  Widget _detailTile(String label, String value, IconData icon, {Color? valueColor, bool multiline = false}) => Container(
+    margin: const EdgeInsets.only(bottom: 6),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+    decoration: BoxDecoration(
+      color: AppColors.surfaceMuted,
+      border: Border.all(color: AppColors.border),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Row(
+      textDirection: TextDirection.rtl,
+      children: [
+        Expanded(child: Text(label, textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, color: AppColors.secondary))),
+        const SizedBox(width: 8),
+        Flexible(
+          flex: 2,
+          child: Text(value, maxLines: multiline ? 3 : 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.left, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: valueColor ?? AppColors.text)),
+        ),
+        const SizedBox(width: 8),
+        _detailIcon(icon, small: true),
+      ],
+    ),
+  );
+
+  Widget _detailIcon(IconData icon, {bool small = false}) => Container(
+    width: small ? 28 : 38,
+    height: small ? 28 : 38,
+    decoration: BoxDecoration(color: AppColors.lightBlue, borderRadius: BorderRadius.circular(small ? 7 : 9)),
+    child: Icon(icon, size: small ? 16 : 20, color: AppColors.primary),
   );
 
   void _confirmDelete(InventoryItem item) => showDialog(
