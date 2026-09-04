@@ -71,6 +71,8 @@ class DatabaseService {
     'laptop_inventory': ['id', 'brand_id', 'model_id', 'cpu_id', 'gpu_model_id', 'screen_size_id', 'is_touch', 'is_2_in_1', 'quantity', 'notes', 'created_at', 'updated_at', 'session_id'],
     'brands': ['id', 'name'],
     'cpus': ['id', 'name'],
+    'cpu_generations': ['id', 'name'],
+    'cpu_classes': ['id', 'name'],
     'gpus': ['id', 'name'],
     'gpu_models': ['id', 'gpu_id', 'name'],
     'screen_sizes': ['id', 'name'],
@@ -153,6 +155,13 @@ class DatabaseService {
       _migrateV4();
       _execute(
         'UPDATE schema_meta SET version = 4 WHERE rowid = (SELECT MAX(rowid) FROM schema_meta)',
+      );
+    }
+
+    if (version < 5) {
+      _migrateV5();
+      _execute(
+        'UPDATE schema_meta SET version = 5 WHERE rowid = (SELECT MAX(rowid) FROM schema_meta)',
       );
     }
   }
@@ -240,6 +249,28 @@ class DatabaseService {
     _execute('CREATE INDEX IF NOT EXISTS idx_inventory_model ON laptop_inventory(model_id)');
     _execute('CREATE INDEX IF NOT EXISTS idx_inventory_cpu ON laptop_inventory(cpu_id)');
     _execute('CREATE INDEX IF NOT EXISTS idx_inventory_session ON laptop_inventory(session_id)');
+  }
+
+  void _migrateV5() {
+    _ensureTable('cpu_generations',
+      'CREATE TABLE cpu_generations (id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE COLLATE NOCASE, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+    _ensureTable('cpu_classes',
+      'CREATE TABLE cpu_classes (id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE COLLATE NOCASE, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+
+    if (_tableExists('laptop_inventory') && !_hasColumn('laptop_inventory', 'cpu_generation_id')) {
+      _execute('ALTER TABLE laptop_inventory ADD COLUMN cpu_generation_id INTEGER REFERENCES cpu_generations(id)');
+    }
+    if (_tableExists('laptop_inventory') && !_hasColumn('laptop_inventory', 'cpu_class_id')) {
+      _execute('ALTER TABLE laptop_inventory ADD COLUMN cpu_class_id INTEGER REFERENCES cpu_classes(id)');
+    }
+
+    _seedTable('cpu_generations', [
+      '4th', '5th', '6th', '7th', '8th', '9th', '10th',
+      '11th', '12th', '13th', '14th',
+    ]);
+    _seedTable('cpu_classes', [
+      'U', 'H', 'HQ', 'HK', 'P', 'M', 'Y', 'HX',
+    ]);
   }
 
   void _seed() {

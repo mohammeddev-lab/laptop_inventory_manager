@@ -1270,15 +1270,12 @@ class InventoryForm extends StatefulWidget {
 class _InventoryFormState extends State<InventoryForm> {
   late int? brand, model, cpu, gpu, screen;
   int? gpuCategory;
+  int? cpuGenerationId, cpuClassId;
   late bool touch, twoInOne;
   late final TextEditingController quantity, notes;
-  String? generation;
-  String? family;
   String? ramSize;
   String? storageSize;
 
-  final List<String> generationOptions = ['6th', '7th', '8th', '9th', '10th'];
-  final List<String> familyOptions = ['u', 'h', 'hx'];
   final List<String> ramOptions = ['8 GB', '16 GB', '32 GB', '64 GB'];
   final List<String> storageOptions = ['256 GB', '512 GB', '1 TB', '2 TB'];
 
@@ -1289,14 +1286,14 @@ class _InventoryFormState extends State<InventoryForm> {
     brand = x?.brandId;
     model = x?.modelId;
     cpu = x?.cpuId;
+    cpuGenerationId = x?.cpuGenerationId;
+    cpuClassId = x?.cpuClassId;
     gpu = x?.gpuModelId;
     screen = x?.screenId;
     touch = x?.touch ?? false;
     twoInOne = x?.convertible ?? false;
     quantity = TextEditingController(text: '${x?.quantity ?? 1}');
     notes = TextEditingController(text: x?.notes ?? '');
-    generation = generationOptions.first;
-    family = familyOptions.first;
     ramSize = ramOptions.first;
     storageSize = storageOptions.first;
   }
@@ -1307,8 +1304,6 @@ class _InventoryFormState extends State<InventoryForm> {
     notes.dispose();
     super.dispose();
   }
-
-  bool get requiresCpuDetails => cpu != null;
 
   Future<void> addCustomValue({
     required String title,
@@ -1376,10 +1371,16 @@ class _InventoryFormState extends State<InventoryForm> {
   List<Choice> get modelOptions {
     final base = widget.repo.choices('models', brandId: brand);
     if (cpu == null) return base;
+    final genName = cpuGenerationId != null
+        ? widget.repo.choices('cpu_generations').where((c) => c.id == cpuGenerationId).map((c) => c.name).firstOrNull
+        : null;
+    final className = cpuClassId != null
+        ? widget.repo.choices('cpu_classes').where((c) => c.id == cpuClassId).map((c) => c.name).firstOrNull
+        : null;
     return filterModelChoicesByCpu(
       base,
-      generation: generation,
-      family: family,
+      generation: genName,
+      family: className,
     );
   }
 
@@ -1476,108 +1477,55 @@ class _InventoryFormState extends State<InventoryForm> {
                     'المعالج',
                     'cpus',
                     cpu,
-                    (v) => setState(() {
-                      cpu = v;
-                      if (cpu != null) {
-                        generation ??= generationOptions.first;
-                        family ??= familyOptions.first;
-                      } else {
-                        generation = null;
-                        family = null;
-                      }
-                    }),
+                    (v) => setState(() => cpu = v),
                   ),
                 ),
-                if (requiresCpuDetails) ...[
-                  const SizedBox(height: 12),
-                  _FormFieldBlock(
+                const SizedBox(height: 12),
+                _FormFieldBlock(
+                  label: 'جيل المعالج',
+                  child: SearchableStringDropdown(
                     label: 'جيل المعالج',
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: DropdownMenu<String>(
-                        initialSelection: generation ?? generationOptions.first,
-                        width: double.infinity,
-                        enableFilter: false,
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.text,
-                        ),
-                        hintText: 'اختر الجيل',
-                        menuStyle: const MenuStyle(
-                          backgroundColor: WidgetStatePropertyAll(AppColors.surface),
-                          minimumSize: WidgetStatePropertyAll(Size(260, 180)),
-                          maximumSize: WidgetStatePropertyAll(Size(320, 260)),
-                        ),
-                        dropdownMenuEntries: [
-                          ...generationOptions.map(
-                            (value) =>
-                                DropdownMenuEntry(value: value, label: value),
-                          ),
-                          const DropdownMenuEntry(
-                            value: '__add__',
-                            label: '+ إضافة قيمة جديدة',
-                          ),
-                        ],
-                        onSelected: (value) {
-                          if (value == '__add__') {
-                            addCustomValue(
-                              title: 'جيل المعالج',
-                              values: generationOptions,
-                              onAdded: (newValue) =>
-                                  setState(() => generation = newValue),
-                            );
-                            return;
-                          }
-                          setState(() => generation = value);
-                        },
-                      ),
-                    ),
+                    value: cpuGenerationId != null
+                        ? widget.repo.choices('cpu_generations').where((c) => c.id == cpuGenerationId).map((c) => c.name).firstOrNull
+                        : null,
+                    options: widget.repo.choices('cpu_generations').map((c) => c.name).toList(),
+                    onChanged: (name) {
+                      if (name == null) {
+                        setState(() => cpuGenerationId = null);
+                        return;
+                      }
+                      final match = widget.repo.choices('cpu_generations').where((c) => c.name == name);
+                      setState(() => cpuGenerationId = match.isNotEmpty ? match.first.id : null);
+                    },
+                    onAddNew: (newValue) async {
+                      final id = widget.repo.addChoice('cpu_generations', newValue);
+                      setState(() => cpuGenerationId = id);
+                    },
                   ),
-                  const SizedBox(height: 12),
-                  _FormFieldBlock(
+                ),
+                const SizedBox(height: 12),
+                _FormFieldBlock(
+                  label: 'فئة المعالج',
+                  child: SearchableStringDropdown(
                     label: 'فئة المعالج',
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: DropdownMenu<String>(
-                        initialSelection: family ?? familyOptions.first,
-                        width: double.infinity,
-                        enableFilter: false,
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.text,
-                        ),
-                        hintText: 'اختر الفئة',
-                        menuStyle: const MenuStyle(
-                          backgroundColor: WidgetStatePropertyAll(AppColors.surface),
-                          minimumSize: WidgetStatePropertyAll(Size(260, 180)),
-                          maximumSize: WidgetStatePropertyAll(Size(320, 260)),
-                        ),
-                        dropdownMenuEntries: [
-                          ...familyOptions.map(
-                            (value) =>
-                                DropdownMenuEntry(value: value, label: value),
-                          ),
-                          const DropdownMenuEntry(
-                            value: '__add__',
-                            label: '+ إضافة قيمة جديدة',
-                          ),
-                        ],
-                        onSelected: (value) {
-                          if (value == '__add__') {
-                            addCustomValue(
-                              title: 'فئة المعالج',
-                              values: familyOptions,
-                              onAdded: (newValue) =>
-                                  setState(() => family = newValue),
-                            );
-                            return;
-                          }
-                          setState(() => family = value);
-                        },
-                      ),
-                    ),
+                    value: cpuClassId != null
+                        ? widget.repo.choices('cpu_classes').where((c) => c.id == cpuClassId).map((c) => c.name).firstOrNull
+                        : null,
+                    options: widget.repo.choices('cpu_classes').map((c) => c.name).toList(),
+                    onChanged: (name) {
+                      if (name == null) {
+                        setState(() => cpuClassId = null);
+                        return;
+                      }
+                      final match = widget.repo.choices('cpu_classes').where((c) => c.name == name);
+                      setState(() => cpuClassId = match.isNotEmpty ? match.first.id : null);
+                    },
+                    onAddNew: (newValue) async {
+                      final id = widget.repo.addChoice('cpu_classes', newValue);
+                      setState(() => cpuClassId = id);
+                    },
                   ),
-                ],
+                ),
                 const SizedBox(height: 12),
                 _FormFieldBlock(
                   label: 'حجم الرام',
@@ -1673,13 +1621,27 @@ class _InventoryFormState extends State<InventoryForm> {
                     'فئة كرت الشاشة',
                     'gpus',
                     gpuCategory,
-                    (v) => setState(() {
-                      gpuCategory = v;
-                      gpu = null;
-                    }),
+                    (v) {
+                      setState(() {
+                        gpuCategory = v;
+                        if (selectedGpuCategoryName == 'share') {
+                          final shareModels = widget.repo.choices('gpu_models', gpuId: v);
+                          final existing = shareModels.where(
+                            (c) => c.name.toLowerCase() == 'share',
+                          );
+                          if (existing.isNotEmpty) {
+                            gpu = existing.first.id;
+                          } else {
+                            gpu = widget.repo.addChoice('gpu_models', 'Share', gpuId: v);
+                          }
+                        } else {
+                          gpu = null;
+                        }
+                      });
+                    },
                   ),
                 ),
-                if (gpuCategory != null) ...[
+                if (gpuCategory != null && selectedGpuCategoryName != 'share') ...[
                   const SizedBox(height: 12),
                   _FormFieldBlock(
                     label: 'موديل كرت الشاشة',
@@ -1952,6 +1914,8 @@ class _InventoryFormState extends State<InventoryForm> {
           'brand': brand,
           'model': model,
           'cpu': cpu,
+          'cpuGenerationId': cpuGenerationId,
+          'cpuClassId': cpuClassId,
           'gpu': gpu,
           'screen': screen,
           'touch': touch,
@@ -2091,6 +2055,192 @@ class SearchableDropdown extends StatelessWidget {
       },
     ),
   );
+}
+
+class SearchableStringDropdown extends StatefulWidget {
+  const SearchableStringDropdown({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    required this.onAddNew,
+  });
+
+  final String label;
+  final String? value;
+  final List<String> options;
+  final ValueChanged<String?> onChanged;
+  final Future<void> Function(String newValue) onAddNew;
+
+  @override
+  State<SearchableStringDropdown> createState() => _SearchableStringDropdownState();
+}
+
+class _SearchableStringDropdownState extends State<SearchableStringDropdown> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool _isOpen = false;
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  List<String> get _filteredOptions {
+    if (_searchQuery.isEmpty) return widget.options;
+    return widget.options
+        .where((o) => o.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() => _isOpen = !_isOpen);
+            if (_isOpen) _focusNode.requestFocus();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _isOpen ? AppColors.primary : AppColors.border,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              color: AppColors.surface,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.value ?? 'اختر ${widget.label}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: widget.value != null
+                          ? AppColors.text
+                          : AppColors.secondary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isOpen
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  color: AppColors.primary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isOpen) ...[
+          const SizedBox(height: 4),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 260),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(12),
+              color: AppColors.surface,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _focusNode,
+                    textDirection: TextDirection.rtl,
+                    decoration: InputDecoration(
+                      hintText: 'البحث عن ${widget.label}...',
+                      hintStyle: const TextStyle(fontSize: 13),
+                      prefixIcon: const Icon(Icons.search, size: 18),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                  ),
+                ),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: _filteredOptions.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == _filteredOptions.length) {
+                        return ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.add, size: 18, color: AppColors.primary),
+                          title: Text(
+                            _searchQuery.isEmpty
+                                ? '+ إضافة قيمة جديدة'
+                                : '+ إضافة "$_searchQuery"',
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onTap: () async {
+                            final newValue = _searchQuery.isNotEmpty
+                                ? _searchQuery
+                                : '';
+                            if (newValue.isEmpty) return;
+                            await widget.onAddNew(newValue);
+                            setState(() {
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                            widget.onChanged(newValue);
+                            setState(() => _isOpen = false);
+                          },
+                        );
+                      }
+                      final option = _filteredOptions[index];
+                      final isSelected = option == widget.value;
+                      return ListTile(
+                        dense: true,
+                        selected: isSelected,
+                        selectedTileColor: AppColors.primary.withAlpha(20),
+                        title: Text(
+                          option,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w400,
+                          ),
+                        ),
+                        onTap: () {
+                          widget.onChanged(option);
+                          setState(() {
+                            _isOpen = false;
+                            _searchQuery = '';
+                            _searchController.clear();
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }
 
 class ReportsPage extends StatefulWidget {

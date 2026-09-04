@@ -66,11 +66,15 @@ class InventoryItem {
     this.brandId,
     this.modelId,
     this.cpuId,
+    this.cpuGenerationId,
+    this.cpuClassId,
     this.gpuModelId,
     this.screenId,
     this.brand,
     this.model,
     this.cpu,
+    this.cpuGeneration,
+    this.cpuClass,
     this.gpu,
     this.screen,
     this.touch,
@@ -81,18 +85,24 @@ class InventoryItem {
     this.sessionId,
   );
   final int id, brandId, modelId, cpuId, gpuModelId, screenId, quantity, sessionId;
+  final int? cpuGenerationId, cpuClassId;
   final String brand, model, cpu, gpu, screen, notes, createdAt;
+  final String? cpuGeneration, cpuClass;
   final bool touch, convertible;
   factory InventoryItem.from(Map<String, Object?> r) => InventoryItem(
     r['id'] as int,
     r['brand_id'] as int,
     r['model_id'] as int,
     r['cpu_id'] as int,
+    r['cpu_generation_id'] as int?,
+    r['cpu_class_id'] as int?,
     r['gpu_model_id'] as int,
     r['screen_size_id'] as int,
     r['brand'] as String,
     r['model'] as String,
     r['cpu'] as String,
+    r['cpu_generation'] as String?,
+    r['cpu_class'] as String?,
     r['gpu'] as String,
     r['screen'] as String,
     (r['is_touch'] as int) == 1,
@@ -262,11 +272,13 @@ class InventoryRepository {
   }
 
   static const _itemJoinSql =
-      'SELECT i.*, b.name brand,m.name model,c.name cpu,gm.name gpu,s.name screen '
+      'SELECT i.*, b.name brand,m.name model,c.name cpu,cg.name cpu_generation,cc.name cpu_class,gm.name gpu,s.name screen '
       'FROM laptop_inventory i '
       'JOIN brands b ON b.id=i.brand_id '
       'JOIN models m ON m.id=i.model_id '
       'JOIN cpus c ON c.id=i.cpu_id '
+      'LEFT JOIN cpu_generations cg ON cg.id=i.cpu_generation_id '
+      'LEFT JOIN cpu_classes cc ON cc.id=i.cpu_class_id '
       'JOIN gpu_models gm ON gm.id=i.gpu_model_id '
       'JOIN screen_sizes s ON s.id=i.screen_size_id';
 
@@ -296,12 +308,14 @@ class InventoryRepository {
   }) {
     final targetSession = ensureSession(sessionId);
     final r = service.db.select(
-      '$_itemJoinSql WHERE i.session_id=? AND i.brand_id=? AND i.model_id=? AND i.cpu_id=? AND i.gpu_model_id=? AND i.screen_size_id=? AND i.is_touch=? AND i.is_2_in_1=? AND (? IS NULL OR i.id != ?) LIMIT 1',
+      '$_itemJoinSql WHERE i.session_id=? AND i.brand_id=? AND i.model_id=? AND i.cpu_id=? AND i.cpu_generation_id IS ? AND i.cpu_class_id IS ? AND i.gpu_model_id=? AND i.screen_size_id=? AND i.is_touch=? AND i.is_2_in_1=? AND (? IS NULL OR i.id != ?) LIMIT 1',
       [
         targetSession.id,
         v['brand'],
         v['model'],
         v['cpu'],
+        v['cpuGenerationId'],
+        v['cpuClassId'],
         v['gpu'],
         v['screen'],
         v['touch'] ? 1 : 0,
@@ -331,11 +345,13 @@ class InventoryRepository {
           );
         } else if (id == null) {
           service.db.execute(
-            'UPDATE laptop_inventory SET brand_id=?,model_id=?,cpu_id=?,gpu_model_id=?,screen_size_id=?,is_touch=?,is_2_in_1=?,quantity=?,notes=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
+            'UPDATE laptop_inventory SET brand_id=?,model_id=?,cpu_id=?,cpu_generation_id=?,cpu_class_id=?,gpu_model_id=?,screen_size_id=?,is_touch=?,is_2_in_1=?,quantity=?,notes=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
             [
               v['brand'],
               v['model'],
               v['cpu'],
+              v['cpuGenerationId'],
+              v['cpuClassId'],
               v['gpu'],
               v['screen'],
               v['touch'] ? 1 : 0,
@@ -352,11 +368,13 @@ class InventoryRepository {
         }
       } else if (id == null) {
         service.db.execute(
-          'INSERT INTO laptop_inventory(brand_id,model_id,cpu_id,gpu_model_id,screen_size_id,is_touch,is_2_in_1,quantity,notes,session_id) VALUES(?,?,?,?,?,?,?,?,?,?)',
+          'INSERT INTO laptop_inventory(brand_id,model_id,cpu_id,cpu_generation_id,cpu_class_id,gpu_model_id,screen_size_id,is_touch,is_2_in_1,quantity,notes,session_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
           [
             v['brand'],
             v['model'],
             v['cpu'],
+            v['cpuGenerationId'],
+            v['cpuClassId'],
             v['gpu'],
             v['screen'],
             v['touch'] ? 1 : 0,
@@ -368,11 +386,13 @@ class InventoryRepository {
         );
       } else {
         service.db.execute(
-          'UPDATE laptop_inventory SET brand_id=?,model_id=?,cpu_id=?,gpu_model_id=?,screen_size_id=?,is_touch=?,is_2_in_1=?,quantity=?,notes=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
+          'UPDATE laptop_inventory SET brand_id=?,model_id=?,cpu_id=?,cpu_generation_id=?,cpu_class_id=?,gpu_model_id=?,screen_size_id=?,is_touch=?,is_2_in_1=?,quantity=?,notes=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',
           [
             v['brand'],
             v['model'],
             v['cpu'],
+            v['cpuGenerationId'],
+            v['cpuClassId'],
             v['gpu'],
             v['screen'],
             v['touch'] ? 1 : 0,
@@ -441,7 +461,7 @@ class InventoryRepository {
     final targetSession = ensureSession(sessionId);
     return service.db
         .select(
-          '''SELECT $field name,SUM(i.quantity) quantity FROM laptop_inventory i JOIN brands b ON b.id=i.brand_id JOIN models m ON m.id=i.model_id JOIN cpus c ON c.id=i.cpu_id JOIN gpu_models gm ON gm.id=i.gpu_model_id JOIN gpus g ON g.id=gm.gpu_id JOIN screen_sizes s ON s.id=i.screen_size_id WHERE i.session_id = ? GROUP BY $field ORDER BY quantity DESC''',
+          '''SELECT $field name,SUM(i.quantity) quantity FROM laptop_inventory i JOIN brands b ON b.id=i.brand_id JOIN models m ON m.id=i.model_id JOIN cpus c ON c.id=i.cpu_id LEFT JOIN cpu_generations cg ON cg.id=i.cpu_generation_id LEFT JOIN cpu_classes cc ON cc.id=i.cpu_class_id JOIN gpu_models gm ON gm.id=i.gpu_model_id JOIN gpus g ON g.id=gm.gpu_id JOIN screen_sizes s ON s.id=i.screen_size_id WHERE i.session_id = ? GROUP BY $field ORDER BY quantity DESC''',
           [targetSession.id],
         )
         .toList();
